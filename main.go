@@ -1,8 +1,17 @@
 package main
 
 import(
+	"os"
+	"log"
 	"net/http"
+	"context"
+	"time"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv" 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type apiConfig struct {
@@ -18,8 +27,9 @@ type apiConfig struct {
 
 func main() {
 	godotenv.Load()
-	dbURL := os.Getenv("DB_URL")
 	port := os.Getenv("PORT")
+	mongoURI := os.Getenv("MONGO_URI")
+	mongoDB := os.Getenv("MONGO_DB")
 	jwtSecret := os.Getenv("SECRET")
 	assetsRoot := os.Getenv("ASSETS_ROOT")
 	RegisterRedirectUrl :=  os.Getenv("REGISTER_REDIRECT_URL")
@@ -32,7 +42,7 @@ func main() {
 		}
 	endpoint := google.Endpoint
 
-	clientOptions := options.Client().ApplyURI(dbURL)
+	clientOptions := options.Client().ApplyURI(mongoURI)
 	client, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		log.Fatal(err)
@@ -46,7 +56,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	DB = client.Database(dbURL)		
+	DB := client.Database(mongoDB)		
 
 	apiCfg := apiConfig {
 		port: port,
@@ -63,12 +73,11 @@ func main() {
 		},
 	}
 
+
+	apiCfg.InitCollections()
 	router := mux.NewRouter()
 	router.HandleFunc("/api/auth/register", apiCfg.handlerRegister).Methods("POST")
 
-
-
-	
 	srv := &http.Server{
 		Handler: router,
 		Addr: ":" + port,
@@ -76,4 +85,17 @@ func main() {
 
 	log.Printf("Serving on: http://localhost:%s\n", port)
 	log.Fatal(srv.ListenAndServe())
+}
+
+
+
+func (cfg *apiConfig) InitCollections() {
+	Users = cfg.DB.Collection("users")
+	/*Carts = config.DB.Collection("carts")
+	OrderItems = config.DB.Collection("order_items")
+	Payments = config.DB.Collection("payments")
+	Products = config.DB.Collection("products")
+	WishList = config.DB.Collection("wish_list")
+	Orders = config.DB.Collection("orders")
+	Categories = config.DB.Collection("categories")*/
 }

@@ -1,5 +1,10 @@
 package models
 
+import(
+	"time"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
 type Cart struct {
     ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`       // Primary Key
     UserID    primitive.ObjectID `json:"user_id" bson:"user_id"`                 // FK → Users.id (buyer)

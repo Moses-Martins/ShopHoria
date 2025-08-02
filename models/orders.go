@@ -1,5 +1,10 @@
 package models
 
+import(
+	"time"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
 type Order struct {
     ID              primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`                  // Primary Key
     BuyerID         primitive.ObjectID `json:"buyer_id" bson:"buyer_id"`                          // FK → Users.id (buyer)
